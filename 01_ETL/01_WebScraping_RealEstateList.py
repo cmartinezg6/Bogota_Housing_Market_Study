@@ -67,42 +67,31 @@ def extract_data(driver, properties):
                 link = link_element.get_attribute("href") if link_element else None
 
                 # Extract location
-                try:
-                    location_element = card.find_element(By.CLASS_NAME, "property-card__detail-top__left")
-                    location = location_element.text.strip() if location_element else None
-                except:
-                    location = None
+                location_element = card.find_element(By.CLASS_NAME, "property-card__detail-top__left")
+                location = location_element.text.strip() if location_element else None
 
                 # Extract price
-                try:
-                    price_element = card.find_element(By.CLASS_NAME, "property-card__detail-price")
-                    price = price_element.text.strip() if price_element else None
-                except:
-                    price = None
+                price_element = card.find_element(By.CLASS_NAME, "property-card__detail-price")
+                price = price_element.text.strip() if price_element else None
 
                 # Extract title (not required but kept for reference)
-                try:
-                    title_element = card.find_element(By.CLASS_NAME, "property-card__detail-title")
-                    title = title_element.text.strip() if title_element else None
-                except:
-                    title = None
+                title_element = card.find_element(By.CLASS_NAME, "property-card__detail-title")
+                title = title_element.text.strip() if title_element else None
 
                 # Extract property attributes (area, bedrooms, bathrooms, parking)
-                try:
-                    specs = card.find_element(By.TAG_NAME, "pt-main-specs")
-                    area = specs.get_attribute("squaremeter")
-                    bedrooms = specs.get_attribute("bedrooms")
-                    bathrooms = specs.get_attribute("toilets")
-                    parking = specs.get_attribute("parking")
-                except:
-                    area, bedrooms, bathrooms, parking = None, None, None, None
-
+                
+                specs = card.find_element(By.TAG_NAME, "pt-main-specs")
+                area = specs.get_attribute("squaremeter")
+                bedrooms = specs.get_attribute("bedrooms")
+                bathrooms = specs.get_attribute("toilets")
+                parking = specs.get_attribute("parking")
+                
                 # Append extracted data to the list
                 properties.append({
                     "id": link.split("/")[-1] if link else None,
                     "price": price,
-                    "zone": location.split("|")[0].strip() if location else None,
-                    "city": "Bogotá D.C.",
+                    "location": location, #.split("|")[0].strip() if location else None,
+                    #"city": "Bogotá D.C.",
                     "area": area,
                     "bedrooms": bedrooms,
                     "bathrooms": bathrooms,
@@ -170,14 +159,11 @@ def save_data(properties, filename="real_estate_data"):
     """Saves data in Parquet, JSON, and CSV formats."""
     df = pd.DataFrame(properties)  # Convert to DataFrame
     
-    df.to_parquet(f"{filename}.parquet", index=False)
     df.to_json(f"{filename}.json", orient="records", indent=4)
-    df.to_csv(f"{filename}.csv", index=False, encoding="utf-8")
 
     write_log("\n📂 Data successfully saved:")
-    write_log(f"✔ Parquet: {filename}.parquet")
     write_log(f"✔ JSON: {filename}.json")
-    write_log(f"✔ CSV: {filename}.csv")
+
 
 # Execute Step 1: Scrape the Data
 start_url = "https://www.metrocuadrado.com/apartamento-apartaestudio-casa-casalote/venta/bogota/?search=form"
